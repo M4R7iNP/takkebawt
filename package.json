@@ -1,0 +1,28 @@
+{
+  "name": "takkebawt",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/M4R7iNP/takkebawt"
+  },
+  "keywords": [
+    "facebook",
+    "birthday",
+    "layziness"
+  ],
+  "author": "Martin Pedersen",
+  "license": "Public Domain",
+  "bugs": {
+    "url": "https://github.com/M4R7iNP/takkebawt/issues"
+  },
+  "homepage": "https://github.com/M4R7iNP/takkebawt",
+  "dependencies": {
+    "colors": "^1.0.3",
+    "qs": "^2.3.3"
+  }
+}
