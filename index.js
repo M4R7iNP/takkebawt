@@ -94,3 +94,12 @@ function publishComment(post) {
 		console.error(e);
 	});
 }
+
+process.on('message', function(message) {
+	if(message == 'shutdown')
+		process.exit(0);
+});
+
+if(process.send)
+	process.send('online');
+
