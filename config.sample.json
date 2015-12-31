@@ -2,5 +2,6 @@
 	"USER_ID": "",
 	"APP_ID": "",
 	"APP_SECRET": "",
-	"ACCESS_TOKEN": ""
+	"ACCESS_TOKEN": "",
+	"POLL_INTERVAL": 10000
 }

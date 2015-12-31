@@ -3,6 +3,10 @@ var https	= require('https'),
 	CONFIG	= require('./config.json');
 
 console.log('Takkebawt started', new Date());
+
+/**
+ * Poller function
+ */
 setInterval(function() {
 	console.log('Takkebawt fetching', new Date());
 	var path = new url.Url();
@@ -10,8 +14,7 @@ setInterval(function() {
 	path.query = {
 		fields: 'from{first_name},to,message,comments{from},type',
 		access_token: CONFIG.ACCESS_TOKEN,
-		since: '30-12-2014'
-		//until: '01-01-2014'
+		since: Date.now()
 	};
 
 	var req = https.request({
@@ -28,7 +31,8 @@ setInterval(function() {
 		res.on('end', function(){
 			var jsonResponse = JSON.parse(responseBody);
 			if(!jsonResponse.data)
-				console.error('Fatal error! Response did not contain field "data". Parsed response: ', jsonResponse);
+				return console.error('Fatal error! Response did not contain field "data". Parsed response: ', jsonResponse);
+
 			processCongratulations(jsonResponse.data);
 		});
 	});
@@ -38,26 +42,28 @@ setInterval(function() {
 	req.on('error', function(e){
 		console.error(e);
 	});
-}, 10000);
+}, CONFIG.POLL_INTERVAL);
 
+
+/**
+ * Will find unthanked gratulations from given array of gratulations.
+ */
 function processCongratulations(data) {
-	//console.log('MASSE GRATULATIONS:', data.length);
 	for(var i = 0; i < data.length; i++) {
 		var post = data[i];
 
-		if(post.type != 'status' && post.type != 'photo')
-			continue;
-
-		if(!post.to || post.to.data[0].id != CONFIG.USER_ID)
-			continue;
-
-		if(post.comments && userHasAlreadyCommented(post.comments.data))
+		if(['status', 'photo'].indexOf(post.type) === -1 ||
+		   (!post.to || post.to.data[0].id != CONFIG.USER_ID) ||
+		   (post.comments && userHasAlreadyCommented(post.comments.data)))
 			continue;
 
 		publishComment(post);
 	}
 }
 
+/**
+ * Returns true if gratulation is thanked for. False otherwise.
+ */
 function userHasAlreadyCommented(comments) {
 	for(var i = 0; i < comments.length; i++)
 		if(comments[i].from.id == CONFIG.USER_ID)
@@ -66,6 +72,9 @@ function userHasAlreadyCommented(comments) {
 	return false;
 }
 
+/**
+ * Pulishes thanking comment on given post.
+ */
 function publishComment(post) {
 	var message = 'Tusen takk, ' + post.from.first_name + '! Godt nyttår! :)';
 	console.log('Commented on ' + post.from.first_name + '\'s post');
