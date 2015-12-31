@@ -1,20 +1,22 @@
 var https	= require('https'),
 	url		= require('url'),
-	CONFIG	= require('./config.json');
+	CONFIG	= require('./config.json'),
+	DAY		= 24*60*60*1000;
 
 console.log('Takkebawt started', new Date());
 
 /**
  * Poller function
  */
-setInterval(function() {
+function fetchPosts() {
 	console.log('Takkebawt fetching', new Date());
+
 	var path = new url.Url();
 	path.pathname = '/me/feed';
 	path.query = {
 		fields: 'from{first_name},to,message,comments{from},type',
 		access_token: CONFIG.ACCESS_TOKEN,
-		since: Date.now()
+		since: (new Date(Math.floor(Date.now() / DAY) * DAY)).toJSON()
 	};
 
 	var req = https.request({
@@ -42,8 +44,7 @@ setInterval(function() {
 	req.on('error', function(e){
 		console.error(e);
 	});
-}, CONFIG.POLL_INTERVAL);
-
+}
 
 /**
  * Will find unthanked gratulations from given array of gratulations.
@@ -53,7 +54,8 @@ function processCongratulations(data) {
 		var post = data[i];
 
 		if(['status', 'photo'].indexOf(post.type) === -1 ||
-		   (!post.to || post.to.data[0].id != CONFIG.USER_ID) ||
+		   (post.from && post.from.id == CONFIG.USER_ID) ||
+		   (post.to && post.to.data[0].id != CONFIG.USER_ID) ||
 		   (post.comments && userHasAlreadyCommented(post.comments.data)))
 			continue;
 
@@ -103,6 +105,9 @@ function publishComment(post) {
 		console.error(e);
 	});
 }
+
+setInterval(fetchPosts, CONFIG.POLL_INTERVAL);
+fetchPosts();
 
 process.on('message', function(message) {
 	if(message == 'shutdown')
